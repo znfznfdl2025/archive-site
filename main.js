@@ -1,6 +1,7 @@
+// Supabase 클라이언트 생성
 const supabaseClient = supabase.createClient(
-  "https://dmvthggevvzztdjybgee.supabase.co",
-  "sb_publishable_nUa2T--NU8mHqCPJyHacOg_R2ElUJmR"
+  "URL",
+  "KEY"
 );
 
 // 임시 비밀번호
@@ -8,6 +9,7 @@ const PASSWORD = "1234";
 
 function checkPassword() {
   const input = document.getElementById("password").value;
+
   if (input === PASSWORD) {
     document.getElementById("auth").style.display = "none";
     document.getElementById("app").style.display = "block";
@@ -18,20 +20,27 @@ function checkPassword() {
 }
 
 async function uploadFile() {
-  const file = document.getElementById("fileInput").files[0];
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
   if (!file) return;
 
   await supabaseClient.storage
     .from("files")
     .upload(file.name, file);
 
+  fileInput.value = "";
   loadFiles();
 }
 
 async function loadFiles() {
-  const { data } = await supabaseClient.storage
+  const { data, error } = await supabaseClient.storage
     .from("files")
     .list("");
+
+  if (error) {
+    alert("파일 불러오기 실패");
+    return;
+  }
 
   const list = document.getElementById("list");
   list.innerHTML = "";
