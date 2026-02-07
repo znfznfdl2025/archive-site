@@ -38,8 +38,18 @@ async function loadFiles() {
   list.innerHTML = "";
 
   data.forEach(file => {
-    const li = document.createElement("li");
-    li.textContent = file.name;
-    list.appendChild(li);
+    const { data: urlData } = supabaseClient.storage
+  .from("files")
+  .getPublicUrl(file.name);
+
+const a = document.createElement("a");
+a.href = urlData.publicUrl;
+a.textContent = file.name;
+a.target = "_blank";
+
+const li = document.createElement("li");
+li.appendChild(a);
+list.appendChild(li);
+
   });
 }
