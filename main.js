@@ -29,7 +29,7 @@ async function uploadFile() {
 }
 
 async function loadFiles() {
-  const { data } = await supabase.storage
+  const { data } = await supabaseClient.storage
     .from("files")
     .list("");
 
