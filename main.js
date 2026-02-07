@@ -1,6 +1,6 @@
 const supabase = supabase.createClient(
-  "SUPABASE_URL",
-  "SUPABASE_ANON_KEY"
+  "https://dmvthggevvzztdjybgee.supabase.co",
+  "sb_publishable_nUa2T--NU8mHqCPJyHacOg_R2ElUJmR"
 );
 
 // 임시 비밀번호
