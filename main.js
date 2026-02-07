@@ -1,4 +1,4 @@
-const supabase = supabase.createClient(
+const supabaseClient = supabase.createClient(
   "https://dmvthggevvzztdjybgee.supabase.co",
   "sb_publishable_nUa2T--NU8mHqCPJyHacOg_R2ElUJmR"
 );
@@ -21,7 +21,7 @@ async function uploadFile() {
   const file = document.getElementById("fileInput").files[0];
   if (!file) return;
 
-  await supabase.storage
+  await supabaseClient.storage
     .from("files")
     .upload(file.name, file);
 
