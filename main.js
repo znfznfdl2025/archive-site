@@ -9,7 +9,6 @@ function checkPassword() {
   const input = document.getElementById("password").value;
 
   if (input === PASSWORD) {
-    // ✅ 너 원래 HTML id에 맞춤
     document.getElementById("auth").style.display = "none";
     document.getElementById("app").style.display = "block";
     loadFiles();
@@ -21,34 +20,14 @@ function checkPassword() {
 async function uploadFile() {
   const fileInput = document.getElementById("fileInput");
   const file = fileInput.files[0];
-  if (!file) return;
-
-  const safeName =
-    Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const filePath = "uploads/" + safeName;
-
-  const { error } = await supabaseClient.storage.from("files").upload(filePath, file);
-
-  if (error) {
-    alert("업로드 실패: " + error.message);
-    console.error(error);
+  if (!file) {
+    alert("파일을 선택해줘!");
     return;
   }
 
-  alert("업로드 성공!");
-  fileInput.value = "";
-  loadFiles();
-}
-
-async function uploadFile() {
-  const fileInput = document.getElementById("fileInput");
-  const file = fileInput.files[0];
-  if (!file) return;
-
-  // ✅ Supabase에서 100% 안전한 파일명 만들기 (한글/공백/특수문자 제거)
+  // ✅ Supabase에서 100% 안전한 파일명 (숫자.확장자)
   const ext = (file.name.split(".").pop() || "bin").toLowerCase();
-  const safeBase = String(Date.now()); // 숫자만 사용
-  const filePath = `uploads/${safeBase}.${ext}`;
+  const filePath = `uploads/${Date.now()}.${ext}`;
 
   const { error } = await supabaseClient.storage
     .from("files")
@@ -63,4 +42,34 @@ async function uploadFile() {
   alert("업로드 성공!");
   fileInput.value = "";
   loadFiles();
+}
+
+async function loadFiles() {
+  const { data, error } = await supabaseClient.storage
+    .from("files")
+    .list("uploads");
+
+  if (error) {
+    alert("불러오기 실패: " + error.message);
+    console.error(error);
+    return;
+  }
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  data.forEach(file => {
+    const url =
+      "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/uploads/" +
+      file.name;
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.textContent = file.name;
+    a.target = "_blank";
+
+    const li = document.createElement("li");
+    li.appendChild(a);
+    list.appendChild(li);
+  });
 }
