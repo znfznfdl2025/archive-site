@@ -4,7 +4,7 @@ const supabaseClient = supabase.createClient(
   "sb_publishable_nUa2T--NU8mHqCPJyHacOg_R2ElUJmR"
 );
 
-// 비밀번호 (임시)
+// 비밀번호
 const PASSWORD = "1234";
 
 // 비밀번호 확인
@@ -25,7 +25,9 @@ async function uploadFile() {
   const file = document.getElementById("fileInput").files[0];
   if (!file) return;
 
-  const filePath = `uploads/${Date.now()}_${file.name}`;
+  // 🔑 Supabase용 안전한 파일명
+  const safeName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const filePath = "uploads/" + safeName;
 
   const { error } = await supabaseClient.storage
     .from("files")
@@ -52,21 +54,4 @@ async function loadFiles() {
     return;
   }
 
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  data.forEach(file => {
-    const fileUrl =
-      "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/uploads/" +
-      file.name;
-
-    const a = document.createElement("a");
-    a.href = fileUrl;
-    a.textContent = file.name;
-    a.target = "_blank";
-
-    const li = document.createElement("li");
-    li.appendChild(a);
-    list.appendChild(li);
-  });
-}
+  const list = document.getEle
