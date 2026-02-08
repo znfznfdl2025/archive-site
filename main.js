@@ -1,37 +1,50 @@
-console.log("main.js NEW BUTTON VERSION LOADED");
+console.log("main.js FINAL LOADED");
 
+// Supabase 연결
 const supabaseClient = supabase.createClient(
   "https://dmvthggevvzztdjybgee.supabase.co",
   "sb_publishable_nUa2T--NU8mHqCPJyHacOg_R2ElUJmR"
 );
 
+// 비밀번호
 const PASSWORD = "1234";
 
+// 비밀번호 확인
 function checkPassword() {
   const input = document.getElementById("password").value;
 
   if (input === PASSWORD) {
-    document.getElementById("auth").style.display = "none";
-    document.getElementById("app").style.display = "block";
+    const authEl = document.getElementById("auth");
+    const appEl = document.getElementById("app");
+
+    if (!authEl || !appEl) {
+      alert("화면 구성(id=auth/app)을 찾을 수 없어. index.html id를 확인해줘!");
+      return;
+    }
+
+    authEl.style.display = "none";
+    appEl.style.display = "block";
     loadFiles();
   } else {
     alert("비밀번호 틀림");
   }
 }
 
+// 파일 업로드 (Storage 업로드 + DB 저장)
 async function uploadFile() {
   const fileInput = document.getElementById("fileInput");
-  const file = fileInput.files[0];
+  const file = fileInput?.files?.[0];
+
   if (!file) {
     alert("파일을 선택해줘!");
     return;
   }
 
-  // 1) 안전한 저장용 파일명 (숫자.확장자)
+  // Storage에는 안전한 이름으로 저장
   const ext = (file.name.split(".").pop() || "bin").toLowerCase();
   const storageKey = `uploads/${Date.now()}.${ext}`;
 
-  // 2) Storage 업로드
+  // 1) Storage 업로드
   const { error: uploadError } = await supabaseClient.storage
     .from("files")
     .upload(storageKey, file, { contentType: file.type });
@@ -42,7 +55,7 @@ async function uploadFile() {
     return;
   }
 
-  // 3) DB(items)에 원래 파일명 + 저장키 저장
+  // 2) DB(items)에 원래 파일명 + storageKey 저장
   const { error: dbError } = await supabaseClient
     .from("items")
     .insert([{
@@ -64,6 +77,7 @@ async function uploadFile() {
   loadFiles();
 }
 
+// 목록 불러오기 + 다운로드 버튼(원래 이름으로 저장)
 async function loadFiles() {
   const { data, error } = await supabaseClient
     .from("items")
@@ -78,6 +92,11 @@ async function loadFiles() {
   }
 
   const list = document.getElementById("list");
+  if (!list) {
+    alert("목록 영역(id=list)을 찾을 수 없어. index.html을 확인해줘!");
+    return;
+  }
+
   list.innerHTML = "";
 
   data.forEach(row => {
@@ -87,11 +106,9 @@ async function loadFiles() {
 
     const li = document.createElement("li");
 
-    // 파일명 표시 (텍스트)
     const name = document.createElement("span");
     name.textContent = row.original_name + " ";
 
-    // 다운로드 버튼
     const btn = document.createElement("button");
     btn.textContent = "다운로드";
     btn.style.marginLeft = "8px";
@@ -106,14 +123,14 @@ async function loadFiles() {
 
         const a = document.createElement("a");
         a.href = blobUrl;
-        a.download = row.original_name; // ✅ 여기서 원래 이름으로 저장 강제
+        a.download = row.original_name; // ✅ 원래 이름으로 저장 강제
         document.body.appendChild(a);
         a.click();
         a.remove();
 
         URL.revokeObjectURL(blobUrl);
       } catch (e) {
-        alert(e.message);
+        alert(String(e.message || e));
         console.error(e);
       }
     };
