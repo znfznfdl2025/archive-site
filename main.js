@@ -78,18 +78,43 @@ async function loadFiles() {
   const list = document.getElementById("list");
   list.innerHTML = "";
 
-  data.forEach(row => {
-    const url =
-      "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/" +
-      row.storage_key;
+data.forEach(row => {
+  const url =
+    "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/" +
+    row.storage_key;
 
-    const a = document.createElement("a");
-a.href = url;
-a.textContent = row.original_name;
-a.download = row.original_name; // ⭐ 다운로드 이름 지정
+  const li = document.createElement("li");
 
-    const li = document.createElement("li");
-    li.appendChild(a);
-    list.appendChild(li);
-  });
-}
+  // 화면에 보이는 텍스트
+  const nameSpan = document.createElement("span");
+  nameSpan.textContent = row.original_name + " ";
+
+  // 다운로드 버튼
+  const btn = document.createElement("button");
+  btn.textContent = "다운로드";
+  btn.onclick = async () => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("다운로드 실패: " + res.status);
+
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = row.original_name; // ✅ 여기서 100% 강제됨
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      alert(e.message);
+      console.error(e);
+    }
+  };
+
+  li.appendChild(nameSpan);
+  li.appendChild(btn);
+  list.appendChild(li);
+});
