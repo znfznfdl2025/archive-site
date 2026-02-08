@@ -2,26 +2,55 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>학회 아카이브</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <h1>📁 학회 아카이브</h1>
 
-  <div id="auth">
+  <!-- 로그인(전체 비밀번호) -->
+  <div id="auth" style="margin: 12px 0;">
     <input type="password" id="password" placeholder="비밀번호 입력" />
     <button onclick="checkPassword()">입장</button>
   </div>
 
-  <div id="app" style="display:none;">
+  <!-- 앱 화면 -->
+  <div id="app" style="display:none; margin-top: 10px;">
     <h2>자료 목록</h2>
 
-    <input type="file" id="fileInput" />
-    <button onclick="uploadFile()">파일 업로드</button>
+    <!-- 잠금해제 / 뒤로 -->
+    <div style="margin: 10px 0;">
+      <button onclick="unlockLeaders()">학회장단 잠금 해제</button>
+      <button onclick="unlockFinance()">총무 잠금 해제</button>
+      <button onclick="goBack()">뒤로(최상위)</button>
+    </div>
 
+    <!-- 영역 선택 / 폴더 생성 -->
+    <div style="margin: 10px 0;">
+      <label for="areaSelect">저장 영역: </label>
+      <select id="areaSelect">
+        <option value="all">학회원용(all)</option>
+        <option value="leaders">학회장단용</option>
+        <option value="finance">총무용</option>
+      </select>
+      <button onclick="createFolder()">폴더 만들기</button>
+    </div>
+
+    <!-- 현재 위치 표시 -->
+    <div id="path" style="margin: 10px 0; color: #555;"></div>
+
+    <!-- 업로드 -->
+    <div style="margin: 10px 0;">
+      <input type="file" id="fileInput" />
+      <button onclick="uploadFile()">파일 업로드</button>
+    </div>
+
+    <!-- 목록 -->
     <ul id="list"></ul>
   </div>
 
-  <script src="main.js?v=final1"></script>
+  <!-- 캐시 방지용 쿼리 포함 -->
+  <script src="main.js?v=folderdnd1"></script>
 </body>
 </html>
