@@ -84,9 +84,9 @@ async function loadFiles() {
       row.storage_key;
 
     const a = document.createElement("a");
-    a.href = url;
-    a.textContent = row.original_name;   // ✅ 원래 이름 표시
-    a.target = "_blank";
+a.href = url;
+a.textContent = row.original_name;
+a.download = row.original_name; // ⭐ 다운로드 이름 지정
 
     const li = document.createElement("li");
     li.appendChild(a);
