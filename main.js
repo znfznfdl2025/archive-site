@@ -1,3 +1,5 @@
+console.log("main.js NEW BUTTON VERSION LOADED");
+
 const supabaseClient = supabase.createClient(
   "https://dmvthggevvzztdjybgee.supabase.co",
   "sb_publishable_nUa2T--NU8mHqCPJyHacOg_R2ElUJmR"
