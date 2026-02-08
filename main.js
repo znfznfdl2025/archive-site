@@ -25,8 +25,8 @@ async function uploadFile() {
   const file = document.getElementById("fileInput").files[0];
   if (!file) return;
 
-  // 🔑 Supabase용 안전한 파일명
-  const safeName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const safeName =
+    Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const filePath = "uploads/" + safeName;
 
   const { error } = await supabaseClient.storage
@@ -54,4 +54,21 @@ async function loadFiles() {
     return;
   }
 
-  const list = document.getEle
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  data.forEach(file => {
+    const fileUrl =
+      "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/uploads/" +
+      file.name;
+
+    const a = document.createElement("a");
+    a.href = fileUrl;
+    a.textContent = file.name;
+    a.target = "_blank";
+
+    const li = document.createElement("li");
+    li.appendChild(a);
+    list.appendChild(li);
+  });
+}
