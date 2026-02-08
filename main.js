@@ -56,12 +56,12 @@ async function loadFiles() {
   list.innerHTML = "";
 
   data.forEach(file => {
-    const { data: urlData } = supabaseClient.storage
-      .from("files")
-      .getPublicUrl("uploads/" + file.name);
+    const fileUrl =
+      "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/uploads/" +
+      file.name;
 
     const a = document.createElement("a");
-    a.href = urlData.publicUrl;
+    a.href = fileUrl;
     a.textContent = file.name;
     a.target = "_blank";
 
