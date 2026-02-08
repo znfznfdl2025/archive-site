@@ -45,9 +45,10 @@ async function uploadFile() {
 }
 
 async function loadFiles() {
+  // ✅ uploads 폴더가 맞는지 확인하려고 일단 루트("")를 봄
   const { data, error } = await supabaseClient.storage
     .from("files")
-    .list("uploads");
+    .list("", { limit: 100, offset: 0 });
 
   if (error) {
     alert("불러오기 실패: " + error.message);
@@ -55,21 +56,63 @@ async function loadFiles() {
     return;
   }
 
+  console.log("list root:", data); // 개발자도구 콘솔에서 확인용
+
   const list = document.getElementById("list");
   list.innerHTML = "";
 
-  data.forEach(file => {
-    const url =
-      "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/uploads/" +
-      file.name;
+  // ✅ 루트에서 uploads 폴더를 찾아서 그 안을 다시 list
+  const hasUploads = data.some(x => x.name === "uploads" && x.id === null);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.textContent = file.name;
-    a.target = "_blank";
+  if (!hasUploads) {
+    // uploads 폴더가 없으면: 루트에 파일이 올라간 경우
+    data
+      .filter(x => x.id !== null) // 파일만
+      .forEach(file => {
+        const url =
+          "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/" +
+          encodeURIComponent(file.name);
 
-    const li = document.createElement("li");
-    li.appendChild(a);
-    list.appendChild(li);
-  });
+        const a = document.createElement("a");
+        a.href = url;
+        a.textContent = file.name;
+        a.target = "_blank";
+
+        const li = document.createElement("li");
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+
+    return;
+  }
+
+  // ✅ uploads 폴더 안의 파일 목록 가져오기
+  const { data: uploadData, error: uploadError } = await supabaseClient.storage
+    .from("files")
+    .list("uploads", { limit: 100, offset: 0 });
+
+  if (uploadError) {
+    alert("uploads 폴더 불러오기 실패: " + uploadError.message);
+    console.error(uploadError);
+    return;
+  }
+
+  console.log("list uploads:", uploadData); // 확인용
+
+  uploadData
+    .filter(x => x.id !== null) // 파일만
+    .forEach(file => {
+      const url =
+        "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/uploads/" +
+        encodeURIComponent(file.name);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.textContent = file.name;
+      a.target = "_blank";
+
+      const li = document.createElement("li");
+      li.appendChild(a);
+      list.appendChild(li);
+    });
 }
