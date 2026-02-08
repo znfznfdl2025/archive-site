@@ -25,17 +25,35 @@ async function uploadFile() {
     return;
   }
 
-  // ✅ Supabase에서 100% 안전한 파일명 (숫자.확장자)
+  // 1) 안전한 저장용 파일명 (숫자.확장자)
   const ext = (file.name.split(".").pop() || "bin").toLowerCase();
-  const filePath = `uploads/${Date.now()}.${ext}`;
+  const storageKey = `uploads/${Date.now()}.${ext}`;
 
-  const { error } = await supabaseClient.storage
+  // 2) Storage 업로드
+  const { error: uploadError } = await supabaseClient.storage
     .from("files")
-    .upload(filePath, file, { contentType: file.type });
+    .upload(storageKey, file, { contentType: file.type });
 
-  if (error) {
-    alert("업로드 실패: " + error.message);
-    console.error(error);
+  if (uploadError) {
+    alert("업로드 실패: " + uploadError.message);
+    console.error(uploadError);
+    return;
+  }
+
+  // 3) DB(items)에 원래 파일명 + 저장키 저장
+  const { error: dbError } = await supabaseClient
+    .from("items")
+    .insert([{
+      type: "file",
+      area: "all",
+      original_name: file.name,
+      storage_key: storageKey,
+      order_index: Date.now()
+    }]);
+
+  if (dbError) {
+    alert("DB 저장 실패: " + dbError.message);
+    console.error(dbError);
     return;
   }
 
@@ -45,74 +63,33 @@ async function uploadFile() {
 }
 
 async function loadFiles() {
-  // ✅ uploads 폴더가 맞는지 확인하려고 일단 루트("")를 봄
-  const { data, error } = await supabaseClient.storage
-    .from("files")
-    .list("", { limit: 100, offset: 0 });
+  const { data, error } = await supabaseClient
+    .from("items")
+    .select("id, original_name, storage_key, created_at")
+    .eq("type", "file")
+    .order("order_index", { ascending: true });
 
   if (error) {
-    alert("불러오기 실패: " + error.message);
+    alert("목록 불러오기 실패: " + error.message);
     console.error(error);
     return;
   }
 
-  console.log("list root:", data); // 개발자도구 콘솔에서 확인용
-
   const list = document.getElementById("list");
   list.innerHTML = "";
 
-  // ✅ 루트에서 uploads 폴더를 찾아서 그 안을 다시 list
-  const hasUploads = data.some(x => x.name === "uploads" && x.id === null);
+  data.forEach(row => {
+    const url =
+      "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/" +
+      row.storage_key;
 
-  if (!hasUploads) {
-    // uploads 폴더가 없으면: 루트에 파일이 올라간 경우
-    data
-      .filter(x => x.id !== null) // 파일만
-      .forEach(file => {
-        const url =
-          "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/" +
-          encodeURIComponent(file.name);
+    const a = document.createElement("a");
+    a.href = url;
+    a.textContent = row.original_name;   // ✅ 원래 이름 표시
+    a.target = "_blank";
 
-        const a = document.createElement("a");
-        a.href = url;
-        a.textContent = file.name;
-        a.target = "_blank";
-
-        const li = document.createElement("li");
-        li.appendChild(a);
-        list.appendChild(li);
-      });
-
-    return;
-  }
-
-  // ✅ uploads 폴더 안의 파일 목록 가져오기
-  const { data: uploadData, error: uploadError } = await supabaseClient.storage
-    .from("files")
-    .list("uploads", { limit: 100, offset: 0 });
-
-  if (uploadError) {
-    alert("uploads 폴더 불러오기 실패: " + uploadError.message);
-    console.error(uploadError);
-    return;
-  }
-
-  console.log("list uploads:", uploadData); // 확인용
-
-  uploadData
-    .filter(x => x.id !== null) // 파일만
-    .forEach(file => {
-      const url =
-        "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/uploads/" +
-        encodeURIComponent(file.name);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.textContent = file.name;
-      a.target = "_blank";
-
-      const li = document.createElement("li");
-      li.appendChild(a);
-      list.appendChild(li);
-    });
+    const li = document.createElement("li");
+    li.appendChild(a);
+    list.appendChild(li);
+  });
 }
