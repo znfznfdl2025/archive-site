@@ -80,43 +80,46 @@ async function loadFiles() {
   const list = document.getElementById("list");
   list.innerHTML = "";
 
-data.forEach(row => {
-  const url =
-    "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/" +
-    row.storage_key;
+  data.forEach(row => {
+    const url =
+      "https://dmvthggevvzztdjybgee.supabase.co/storage/v1/object/public/files/" +
+      row.storage_key;
 
-  const li = document.createElement("li");
+    const li = document.createElement("li");
 
-  // 화면에 보이는 텍스트
-  const nameSpan = document.createElement("span");
-  nameSpan.textContent = row.original_name + " ";
+    // 파일명 표시 (텍스트)
+    const name = document.createElement("span");
+    name.textContent = row.original_name + " ";
 
-  // 다운로드 버튼
-  const btn = document.createElement("button");
-  btn.textContent = "다운로드";
-  btn.onclick = async () => {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("다운로드 실패: " + res.status);
+    // 다운로드 버튼
+    const btn = document.createElement("button");
+    btn.textContent = "다운로드";
+    btn.style.marginLeft = "8px";
 
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
+    btn.onclick = async () => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("다운로드 실패: " + res.status);
 
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = row.original_name; // ✅ 여기서 100% 강제됨
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
 
-      URL.revokeObjectURL(blobUrl);
-    } catch (e) {
-      alert(e.message);
-      console.error(e);
-    }
-  };
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = row.original_name; // ✅ 여기서 원래 이름으로 저장 강제
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
 
-  li.appendChild(nameSpan);
-  li.appendChild(btn);
-  list.appendChild(li);
-});
+        URL.revokeObjectURL(blobUrl);
+      } catch (e) {
+        alert(e.message);
+        console.error(e);
+      }
+    };
+
+    li.appendChild(name);
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+}
