@@ -8,18 +8,18 @@
 <body>
   <h1>📁 학회 아카이브</h1>
 
-  <div id="auth">
+  <div id="login">
     <input type="password" id="password" placeholder="비밀번호 입력" />
     <button onclick="checkPassword()">입장</button>
   </div>
 
-  <div id="app" style="display:none;">
+  <div id="archive" style="display:none;">
     <h2>자료 목록</h2>
 
     <input type="file" id="fileInput" />
     <button onclick="uploadFile()">파일 업로드</button>
 
-    <ul id="list"></ul>
+    <ul id="fileList"></ul>
   </div>
 
   <script src="main.js"></script>
